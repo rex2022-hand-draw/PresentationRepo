@@ -1,0 +1,4 @@
+"relativeX","y","relativeTime","timeUpload","userID","dominantHand","drawnHand","isParkinsonPatient","byDominant","slope"
+343,224.39999961853,0.251645169781521,1666917030370,117,"right","left","false",FALSE,0.412698412698413
+183,158.39999961853,0.378836535930508,1666917030370,117,"right","left","false",FALSE,0.412371134020619
+127,134.39999961853,0.708870755461964,1666917030370,117,"right","left","false",FALSE,0.418300653594771

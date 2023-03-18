@@ -1,0 +1,1 @@
+These data split of "useful" and "not useful" aimed to select data that did either not complete the drawing, involved some unusual levels of tremor, and thus were deemed not fitting our task.

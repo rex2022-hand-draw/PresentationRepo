@@ -1,0 +1,258 @@
+---
+title: "Statistical Inference Method"
+author: "Hoai Huong"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## HOUSEKEEPING
+
+```{r}
+##### SETUP ##############################################################
+# setwd("<your_path_here>")
+rm(list = ls()) # Clear R's memory
+options(stringsAsFactors=FALSE)# Make sure words are read in as characters rather than factors
+
+##### IMPORT LIBRARIES ###################################################
+library(ggplot2) # Visualization
+library(stats) # Transformation
+library(dplyr)
+```
+
+## IMPORT DATA
+
+We choose the parameters to be Slope by Time because it can capture both the dexterity and speed of the drawing.
+
+```{r}
+##### GET FILENAMES ######################################################
+Quantify <- list.files("Data", pattern = NULL, all.files = TRUE, full.names = FALSE)
+Quantify <- Quantify[3:338] # Remove the first two garbage names
+Quantify <- Quantify[!is.na(Quantify)]
+
+##### GET DATA ############################################################
+quantify_plotting <- data.frame(matrix(data=NA, nrow = 0, ncol = 8))  # Create empty data frames -- Prepare to store data
+for(i in 1:length(Quantify)) {
+  if(grepl("Slopedata", Quantify[i]) == TRUE) {
+    dataframe <- read.csv(paste("Data/", Quantify[i], sep = ""))
+    quantify_plotting <- rbind(quantify_plotting, dataframe)
+    assign(Quantify[i], dataframe)
+  }
+}
+quantify_plotting <- quantify_plotting[which(!is.na(quantify_plotting$slope)),]
+quantify_plotting <- quantify_plotting[!is.infinite(quantify_plotting$slope),]
+quantify_plotting$byDominant[which(quantify_plotting$byDominant == "TRUE")] <- "Dominant"
+quantify_plotting$byDominant[which(quantify_plotting$byDominant == "FALSE")] <- "Non-Dominant"
+```
+
+## DATA VISUALIZATION
+
+```{r}
+plotting <- ggplot(data = quantify_plotting, aes(x = relativeTime, y = slope, group = interaction(timeUpload, userID), color = byDominant))+
+  geom_line(alpha = 0.3)+
+  geom_point(alpha = 0)+
+  scale_colour_manual(values = c("#000000", "#00CCC6"))+
+  facet_wrap(~byDominant, ncol = 1)+
+  ##facet_grid(rows = vars(timeUpload),cols = vars(byDominant))+
+  labs(title = "Slope by Time")+
+  theme_classic()+
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        strip.background = element_blank(),
+        panel.border = element_rect(colour = "black", fill = NA),
+        plot.margin = unit(c(1,1,1,1), units = , "cm"),
+        axis.text = element_text(size = 11),
+        axis.title = element_text(size = 11, face = "plain"),
+        plot.title = element_text(size = 11 , hjust = 0.5, face = "bold"),
+        plot.subtitle = element_text(size = 11 , hjust = 0, face = "bold"),
+        legend.title = element_blank(),
+        legend.text = element_text(size = 11, face = "italic"),
+        legend.position = "bottom",
+        strip.text = element_text(size = 11, face = "bold"))
+
+plotting
+```
+
+## DATA MODELLING
+
+```{r}
+##### CONVERSION ############################################################
+convert.fft <- function(cs, sample.rate=1) { # Supporting Function
+  cs <- cs / length(cs) # normalize
+  
+  distance.center <- function(c)signif( Mod(c),        4)
+  angle           <- function(c)signif( 180*Arg(c)/pi, 3)
+  
+  df <- data.frame(cycle    = 0:(length(cs)-1),
+                   freq     = 0:(length(cs)-1) * sample.rate / length(cs),
+                   strength = sapply(cs, distance.center),
+                   delay    = sapply(cs, angle))
+  df
+}
+##### FOURIER TRANSFORMATION ################################################
+quantify_plotting <- data.frame(matrix(data=NA, nrow = 0, ncol = 8))
+fourier_plotting <- data.frame(matrix(data=NA, nrow = 0, ncol = 6))
+for(i in 1:length(Quantify)) {
+  if(grepl("Slopedata", Quantify[i]) == TRUE) {
+    dataframe <- read.csv(paste("Data/", Quantify[i], sep = ""))
+    dataframe <- dataframe[which(!is.na(dataframe$slope)),]
+    dataframe <- dataframe[!is.infinite(dataframe$slope),]
+    dataframe$fourier <- fft(dataframe$slope) # Fourier Transformation
+    quantify_plotting <- rbind(quantify_plotting, dataframe)
+    fourier_info <- convert.fft(dataframe$fourier) # Conversion
+    fourier_info$label <- dataframe$byDominant
+    fourier_info$ID <- paste(dataframe$userID, dataframe$timeUpload, sep = "_")
+    fourier_plotting <- rbind(fourier_plotting, fourier_info)
+    assign(Quantify[i], dataframe)
+  }
+}
+quantify_plotting$byDominant[which(quantify_plotting$byDominant == "TRUE")] <- "Dominant"
+quantify_plotting$byDominant[which(quantify_plotting$byDominant == "FALSE")] <- "Non-Dominant"
+fourier_plotting$label[which(fourier_plotting$label == "TRUE")] <- "Dominant"
+fourier_plotting$label[which(fourier_plotting$label == "FALSE")] <- "Non-Dominant"
+
+```
+
+## OBSERVATION
+
+No distinct differences among all parameters, except for strength. Non-dominant tends to have cycles with greater strength.
+
+```{r}
+##### DELAY VS STRENGTH #####################################################
+plotting <- ggplot(data = fourier_plotting, aes(x = strength, y = delay, group = ID, color = label))+
+  geom_point(alpha = 0.1)+
+  geom_line(alpha = 0.3)+
+  scale_colour_manual(values = c("#000000", "#00CCC6"))+
+  facet_wrap(~label, ncol = 1)+
+  theme_classic()+
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        strip.background = element_blank(),
+        panel.border = element_rect(colour = "black", fill = NA),
+        plot.margin = unit(c(1,1,1,1), units = , "cm"),
+        axis.text = element_text(size = 11),
+        axis.title = element_text(size = 11, face = "plain"),
+        plot.title = element_text(size = 11 , hjust = 0.5, face = "bold"),
+        plot.subtitle = element_text(size = 11 , hjust = 0, face = "bold"),
+        legend.title = element_blank(),
+        legend.text = element_text(size = 11, face = "italic"),
+        legend.position = "bottom",
+        strip.text = element_text(size = 11, face = "bold"))
+plotting
+
+##### FREQUENCY VS CYCLE ####################################################
+plotting <- ggplot(data = fourier_plotting, aes(x = cycle, y = freq, group = ID, color = label))+
+  geom_point(alpha = 0.1)+
+  geom_line(alpha = 0.3)+
+  scale_colour_manual(values = c("#000000", "#00CCC6"))+
+  facet_wrap(~label, ncol = 1)+
+  theme_classic()+
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        strip.background = element_blank(),
+        panel.border = element_rect(colour = "black", fill = NA),
+        plot.margin = unit(c(1,1,1,1), units = , "cm"),
+        axis.text = element_text(size = 11),
+        axis.title = element_text(size = 11, face = "plain"),
+        plot.title = element_text(size = 11 , hjust = 0.5, face = "bold"),
+        plot.subtitle = element_text(size = 11 , hjust = 0, face = "bold"),
+        legend.title = element_blank(),
+        legend.text = element_text(size = 11, face = "italic"),
+        legend.position = "bottom",
+        strip.text = element_text(size = 11, face = "bold"))
+plotting
+
+##### STRENGTH VS CYCLE #####################################################
+plotting <- ggplot(data = fourier_plotting, aes(x = cycle, y = strength, group = ID, color = label))+
+  geom_point(alpha = 0.1)+
+  geom_line(alpha = 0.3)+
+  scale_colour_manual(values = c("#000000", "#00CCC6"))+
+  facet_wrap(~label, ncol = 1)+
+  theme_classic()+
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        strip.background = element_blank(),
+        panel.border = element_rect(colour = "black", fill = NA),
+        plot.margin = unit(c(1,1,1,1), units = , "cm"),
+        axis.text = element_text(size = 11),
+        axis.title = element_text(size = 11, face = "plain"),
+        plot.title = element_text(size = 11 , hjust = 0.5, face = "bold"),
+        plot.subtitle = element_text(size = 11 , hjust = 0, face = "bold"),
+        legend.title = element_blank(),
+        legend.text = element_text(size = 11, face = "italic"),
+        legend.position = "bottom",
+        strip.text = element_text(size = 11, face = "bold"))
+plotting
+
+##### DELAY VS CYCLE #########################################################
+plotting <- ggplot(data = fourier_plotting, aes(x = cycle, y = delay, group = ID, color = label))+
+  geom_point(alpha = 0.1)+
+  geom_line(alpha = 0.3)+
+  scale_colour_manual(values = c("#000000", "#00CCC6"))+
+  facet_wrap(~label, ncol = 1)+
+  theme_classic()+
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        strip.background = element_blank(),
+        panel.border = element_rect(colour = "black", fill = NA),
+        plot.margin = unit(c(1,1,1,1), units = , "cm"),
+        axis.text = element_text(size = 11),
+        axis.title = element_text(size = 11, face = "plain"),
+        plot.title = element_text(size = 11 , hjust = 0.5, face = "bold"),
+        plot.subtitle = element_text(size = 11 , hjust = 0, face = "bold"),
+        legend.title = element_blank(),
+        legend.text = element_text(size = 11, face = "italic"),
+        legend.position = "bottom",
+        strip.text = element_text(size = 11, face = "bold"))
+plotting
+
+##### STRENGTH VS FREQUENCY ###################################################
+plotting <- ggplot(data = fourier_plotting, aes(x = freq, y = strength, group = ID, color = label))+
+  geom_point(alpha = 0.1)+
+  geom_line(alpha = 0.3)+
+  scale_colour_manual(values = c("#000000", "#00CCC6"))+
+  facet_wrap(~label, ncol = 1)+
+  theme_classic()+
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        strip.background = element_blank(),
+        panel.border = element_rect(colour = "black", fill = NA),
+        plot.margin = unit(c(1,1,1,1), units = , "cm"),
+        axis.text = element_text(size = 11),
+        axis.title = element_text(size = 11, face = "plain"),
+        plot.title = element_text(size = 11 , hjust = 0.5, face = "bold"),
+        plot.subtitle = element_text(size = 11 , hjust = 0, face = "bold"),
+        legend.title = element_blank(),
+        legend.text = element_text(size = 11, face = "italic"),
+        legend.position = "bottom",
+        strip.text = element_text(size = 11, face = "bold"))
+plotting
+
+```
+
+## ASSESS THE MODELS
+
+We classified the labels using strength:
+
+```{r}
+### Threshold strength = 0.8
+length(unique(fourier_plotting$ID[which(fourier_plotting$label == "Non-Dominant")]))
+length(unique(fourier_plotting$ID[which(fourier_plotting$label == "Non-Dominant" & fourier_plotting$strength >= 0.8)]))
+length(unique(fourier_plotting$ID[which(fourier_plotting$label == "Dominant")]))
+length(unique(fourier_plotting$ID[which(fourier_plotting$label == "Dominant" & fourier_plotting$strength >= 0.8)]))
+
+### Threshold strength = 0.9
+length(unique(fourier_plotting$ID[which(fourier_plotting$label == "Non-Dominant")]))
+length(unique(fourier_plotting$ID[which(fourier_plotting$label == "Non-Dominant" & fourier_plotting$strength >= 0.9)]))
+length(unique(fourier_plotting$ID[which(fourier_plotting$label == "Dominant")]))
+length(unique(fourier_plotting$ID[which(fourier_plotting$label == "Dominant" & fourier_plotting$strength >= 0.9)]))
+
+### Threshold strength = 1
+length(unique(fourier_plotting$ID[which(fourier_plotting$label == "Non-Dominant")]))
+length(unique(fourier_plotting$ID[which(fourier_plotting$label == "Non-Dominant" & fourier_plotting$strength >= 1)]))
+length(unique(fourier_plotting$ID[which(fourier_plotting$label == "Dominant")]))
+length(unique(fourier_plotting$ID[which(fourier_plotting$label == "Dominant" & fourier_plotting$strength >= 1)]))
+```

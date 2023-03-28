@@ -11,7 +11,8 @@ See below for a short explanation of each methods we employed!
 Sample entropy is a close estimation of approximate entropy. The Approximate Entropy method uses the python pyentrp library to calculate entropy scores for each drawing. It then plots the data to show the relation between dominant and non-dominant hand with their associated entropy scores.
 
 ### Transfer learning with Convolutional Neural Networks (CNNs):
-Neural networks are mathematical functions which semi-automatically learn patterns from massive amounts of data.
+Neural networks semi-automatically learn patterns from massive amounts of data.
+
 Convolutional neural networks (CNN) were specifically designed for sequential input, such as images, to identify invariant features through shifts, rotation or adjustment such as brightness.
 Convolution and pooling layers extract important features in images, which are then used to classify them into categories.
 

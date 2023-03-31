@@ -1,4 +1,4 @@
-# PresentationRepo
+# Classification of hand drawings using machine learning algorithms!
 
 Thanks for your interest in our project! 
 You will find codes for each algorithmic approaches, together with data in the Anonimized_data folder.

@@ -21,6 +21,7 @@ Our code uses **3 publicly avaialble models**:
 * ResNet50
 * MobileNetV3-Small
 * MobileNetV3-Large 
+
 We plan to test more models to look for best performance!
 
 For data processing, we took **json data** obtained from **Neuroprior.com**, which was then **rendered into images** through code also included in CNN_Transfer_Learning.

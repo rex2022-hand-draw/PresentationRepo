@@ -6,16 +6,11 @@ from math import fabs
 import png;
 import json;
 
-"""
-Two things to do first and then run this scipt:
-1) Change the folderPath to the path in which the handrawing data is held
-2) Change the GOAL_FILE_PATH in RenderDrawing to the path that you are aiming to render the images into
-"""
-#Put the path to the folder that holds the handdrawing data
-folderPath = "C:\\Users\\mashi\\Downloads\\REX\\Hand drawing data\\data"
+# Path to the folder holding the handdrawing data
+SOURCE_PATH = "./Anonimized_data/all_data/useful"
 
-#Change this path to the folder that you are aiming to render the images into
-GOAL_FILE_PATH = "C:\\Users\\mashi\\Desktop\\VisualStudioCode\\python\\DominantHandDrawing\\renderedDrawings"
+# Path to the folder to which images are rendered
+GOAL_PATH = "./CNN_Transfer_Learning/image_rendered"
 
 """
 REX Python file for reading json data and redering it into drawings.
@@ -27,15 +22,9 @@ renders it into a PNG.
 
 """
 
-
-WIDTH = 600  #determined initially from website
-HEIGHT = 475 #determined initially from website
-NON_DRAWING_PIXEL = [255,255,255]
-DRAWING_PIXEL = [255,0,0]
+WIDTH, HEIGHT = 600, 475  #determined initially from website
 
 class RenderDrawing():
-    arrayDrawing = None
-    drawingName = ""
 
     """
     Render drawing from data by:
@@ -52,59 +41,88 @@ class RenderDrawing():
     2) Render the pixels by giving it to the png module.
     """
 
-    #Reads the array of pixels from the json file given
-    def readJSON(self, filePath):
+    def readJSON(self, filePath : str):
+        """
+        Reads the array of pixels from the given json file.
+
+        :param str filePath: Path to json file to be read.
+        """
         with open(filePath, 'r') as file:
             fileContent = file.read()
             readJsonArray = json.loads(fileContent)
 
         self.drawingName = str(readJsonArray["time-uploaded"])
+        self.drawn_hand_is_right = (str(readJsonArray["dominantHand"]) == "right")
+        self.dominant_hand_is_right = (str(readJsonArray["drawnHand"]) == "right")
 
-        self.arrayDrawing = NON_DRAWING_PIXEL *WIDTH *HEIGHT
+        self.wb_arrayDrawing = [0, 0, 0]*WIDTH*HEIGHT
+        self.red_on_white_arrayDrawing = [255,255,255]*WIDTH*HEIGHT
+
+        red_pixel = [255, 0, 0]
+        white_pixel = [255, 255, 255]
 
         for pixel in readJsonArray["coordinates"]:
             x = int(pixel["x"])
             y = int(pixel["y"])
-            self.arrayDrawing[y * WIDTH * 3 + x * 3 + 0] = DRAWING_PIXEL[0]
-            self.arrayDrawing[y * WIDTH * 3 + x * 3 + 1] = DRAWING_PIXEL[1]
-            self.arrayDrawing[y * WIDTH * 3 + x * 3 + 2] = DRAWING_PIXEL[2]
+            p_red   = y * WIDTH * 3 + x * 3 + 0
+            p_green = y * WIDTH * 3 + x * 3 + 1
+            p_blue  = y * WIDTH * 3 + x * 3 + 2
+
+            self.wb_arrayDrawing[p_red] = white_pixel[0]
+            self.wb_arrayDrawing[p_green] = white_pixel[1]
+            self.wb_arrayDrawing[p_blue] = white_pixel[2]
+
+            self.red_on_white_arrayDrawing[p_red] = red_pixel[0]
+            self.red_on_white_arrayDrawing[p_green] = red_pixel[1]
+            self.red_on_white_arrayDrawing[p_blue] = red_pixel[2]
         
         #print("readJSON SUCCESSFUL!")
 
 
-    #Renders picture currently read with its given name, or raise exception if no picture read 
-    def render(self):
-        if (self.arrayDrawing != None):
+    def render(self, render_mode : str):
+        """
+        Renders picture currently read with name taken from the file name,
+        either red_on_white or white_on_black; or raise exception if no picture 
+        has been read so far.
+
+        :param str render_mode: Designates the picture to be rendered:
+        red on white if "red_on_white", otherwise white on black.
+        :raises Exception: Indicates render was called without json drawing read by the 
+        class yet. 
+        """
+        if render_mode == "red_on_white":
+            written_arr = self.red_on_white_arrayDrawing
+            r_mode_name = "_rw"
+
+        else:
+            written_arr = self.wb_arrayDrawing
+            r_mode_name = "_wb"
+
+        dominant_hand = "R" if self.dominant_hand_is_right else "L"
+        drawing_hand = "R" if self.drawn_hand_is_right else "L"
+        new_image_name = "dom_" + dominant_hand + "_drawn_" + drawing_hand + "_" + self.drawingName + r_mode_name
+
+        if (written_arr != None):
             writer = png.Writer(width=WIDTH, height=HEIGHT, greyscale=False)
-            with open(GOAL_FILE_PATH + "\\" + self.drawingName + ".png", 'bw') as goalFile: 
-                writer.write_array(goalFile, self.arrayDrawing)
+            with open(GOAL_PATH + "/" + new_image_name + ".png", 'bw') as goalFile: 
+                writer.write_array(goalFile, written_arr)
             #print("RENDER SUCCESSFUL!")
         else:
             raise Exception("render has been called without json drawing read by the class") 
 
 
-
-
-def main(p):
-    rd = RenderDrawing()
-    print("INSTANTIATION SUCCESSFUL!")
-    rd.readJSON(p)
-    print("readJSON SUCCESSFUL!")
-    rd.render()
-    print("RENDER SUCCESSFUL!")
-
-def renderAllInFolder(folder):
+def renderAllInFolder(folder : str, render_mode : str):
     rd = RenderDrawing()
 
     allInDir = os.listdir(folder)
     for p in allInDir:
-        fullPath = folder + "\\" + p
+        fullPath = folder + "/" + p
         if os.path.isfile(fullPath):
             rd.readJSON(fullPath)
-            rd.render()
+            rd.render(render_mode=render_mode)
     
     print("RENDER ALL SUCCESSFUL!")
 
-#main(filePath)
-renderAllInFolder(folderPath)
+if __name__ == "__main__":
+    renderAllInFolder(SOURCE_PATH, "white_on_black")
 

@@ -52,8 +52,8 @@ class RenderDrawing():
             readJsonArray = json.loads(fileContent)
 
         self.drawingName = str(readJsonArray["time-uploaded"])
-        self.drawn_hand_is_right = (str(readJsonArray["dominantHand"]) == "right")
-        self.dominant_hand_is_right = (str(readJsonArray["drawnHand"]) == "right")
+        self.dominant_hand_is_right = (str(readJsonArray["dominantHand"]) == "right")
+        self.drawn_hand_is_right = (str(readJsonArray["drawnHand"]) == "right")
 
         self.wb_arrayDrawing = [0, 0, 0]*WIDTH*HEIGHT
         self.red_on_white_arrayDrawing = [255,255,255]*WIDTH*HEIGHT

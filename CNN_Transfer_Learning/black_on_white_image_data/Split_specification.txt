@@ -1,0 +1,12 @@
+Originally had 54 imgs in dom, and 21 in nondom. 
+Data taken from Anonimized_data/useful folder on 05/07 from git repo.
+
+Unbalanced:
+- Train: 32 imgs dom (60% of 54). 13 imgs nondom (60% of 21).
+- Test: 11 imgs dom (20% of 54). 4 imgs nondom (20% of 21).
+- Validation: 11 imgs dom (20% of 54). 4 imgs nondom (20% of 21).
+
+Balanced (in terms of number of imgs in dom / nondom for test & validation).
+- Train: 46 imgs dom (85% of 54). 13 imgs nondom (60% of 21).
+- Test: 4 imgs dom (7% of 54). 4 imgs nondom (20% of 21).
+- Validation: 4 imgs dom (7% of 54). 4 imgs nondom (20% of 21).

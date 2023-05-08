@@ -52,6 +52,8 @@ class RenderDrawing():
             readJsonArray = json.loads(fileContent)
 
         self.drawingName = str(readJsonArray["time-uploaded"])
+        self.drawn_hand_is_right = (str(readJsonArray["dominantHand"]) == "right")
+        self.dominant_hand_is_right = (str(readJsonArray["drawnHand"]) == "right")
 
         self.wb_arrayDrawing = [0, 0, 0]*WIDTH*HEIGHT
         self.red_on_white_arrayDrawing = [255,255,255]*WIDTH*HEIGHT
@@ -96,9 +98,13 @@ class RenderDrawing():
             written_arr = self.wb_arrayDrawing
             r_mode_name = "_wb"
 
+        dominant_hand = "R" if self.dominant_hand_is_right else "L"
+        drawing_hand = "R" if self.drawn_hand_is_right else "L"
+        new_image_name = "dom_" + dominant_hand + "_drawn_" + drawing_hand + "_" + self.drawingName + r_mode_name
+
         if (written_arr != None):
             writer = png.Writer(width=WIDTH, height=HEIGHT, greyscale=False)
-            with open(GOAL_PATH + "/" + self.drawingName + r_mode_name + ".png", 'bw') as goalFile: 
+            with open(GOAL_PATH + "/" + new_image_name + ".png", 'bw') as goalFile: 
                 writer.write_array(goalFile, written_arr)
             #print("RENDER SUCCESSFUL!")
         else:

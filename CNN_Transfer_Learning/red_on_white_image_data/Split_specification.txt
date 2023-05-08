@@ -10,3 +10,5 @@ Balanced (in terms of number of imgs in dom / nondom for test & validation).
 - Train: 46 imgs dom (85% of 54). 13 imgs nondom (60% of 21).
 - Test: 4 imgs dom (7% of 54). 4 imgs nondom (20% of 21).
 - Validation: 4 imgs dom (7% of 54). 4 imgs nondom (20% of 21).
+
+Also, red on white images might introduce some inefficiency when used to train CNNs.

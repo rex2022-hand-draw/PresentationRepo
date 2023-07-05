@@ -1,17 +1,3 @@
-
-from genericpath import isfile
-import os
-
-from math import fabs
-import png;
-import json;
-
-# Path to the folder holding the handdrawing data
-SOURCE_PATH = "./Anonimized_data/all_data/useful"
-
-# Path to the folder to which images are rendered
-GOAL_PATH = "./CNN_Transfer_Learning/image_rendered"
-
 """
 REX Python file for reading json data and redering it into drawings.
 
@@ -22,22 +8,40 @@ renders it into a PNG.
 
 """
 
+
+from genericpath import isfile
+import os
+
+import png
+import json
+
+# Path to the folder holding the handdrawing data
+SOURCE_PATH = "./Anonimized_data/all_data/useful"
+
+# Path to the folder to which images are rendered
+GOAL_PATH = "./CNN_Transfer_Learning/image_rendered"
+
 WIDTH, HEIGHT = 600, 475  #determined initially from website
 
 class RenderDrawing():
-
     """
     Render drawing from data by:
     1) Reading the JSON data into an array of pixels which has been covered 
        (each pixel is an array of 3 values, R, G, B)
     2) Render a whole image out of the JSON object's dimension and 
        determining color values to each pixel based on whether the pixel has been covered
-       (the whole image is an array of int, obtained by flattening rows of the image, 
-       which in turn are array of pixels that is flattened, where each pixel is the 3 value [R, G, B];
-       so a black image of 2 * 3 pixels with the bottom right pixel being red is shown as:
+       
+       The image is an array of integers obtained by flattening rows its rows. 
+       Each row is an array of pixels, where each pixel is the 3 value [R, G, B].
+       
+       So a black 2x3 image with a red pixel at the bottom right is:
+
        [0, 0, 0, 0, 0, 0, 
+
         0, 0, 0, 0, 0, 0,
+
         0, 0, 0, 255, 0, 0])
+
     2) Render the pixels by giving it to the png module.
     """
 
@@ -110,19 +114,19 @@ class RenderDrawing():
         else:
             raise Exception("render has been called without json drawing read by the class") 
 
+    @staticmethod
+    def renderAllInFolder(folder : str, render_mode : str):
+        rd = RenderDrawing()
 
-def renderAllInFolder(folder : str, render_mode : str):
-    rd = RenderDrawing()
-
-    allInDir = os.listdir(folder)
-    for p in allInDir:
-        fullPath = folder + "/" + p
-        if os.path.isfile(fullPath):
-            rd.readJSON(fullPath)
-            rd.render(render_mode=render_mode)
-    
-    print("RENDER ALL SUCCESSFUL!")
+        allInDir = os.listdir(folder)
+        for p in allInDir:
+            fullPath = folder + "/" + p
+            if os.path.isfile(fullPath):
+                rd.readJSON(fullPath)
+                rd.render(render_mode=render_mode)
+        
+        print("RENDER ALL SUCCESSFUL!")
 
 if __name__ == "__main__":
-    renderAllInFolder(SOURCE_PATH, "white_on_black")
+    RenderDrawing.renderAllInFolder(SOURCE_PATH, "white_on_black")
 

@@ -7,19 +7,18 @@ import json
 from typing import List
 import png
 
-WIDTH, HEIGHT = 600, 475 #determined initially from website
-NON_DRAWING_PIXEL = [255,255,255]
-DRAWING_PIXEL = [255,0,0]
-START_POINT_X = 282
-START_POINT_Y = 197 #197.39999961853027
-END_POINT_X = 282 + (355 - 282) * 3
-END_POINT_Y = 197 #197.39999961853027
-
-BACKGROUND = NON_DRAWING_PIXEL * WIDTH * HEIGHT
-
 TEMPLATE_PATH = "./image_rendered/reference_spiral.png"
 
 class Drawing:
+    WIDTH, HEIGHT = 600, 475 #determined initially from website
+    NON_DRAWING_PIXEL = [255,255,255]
+    DRAWING_PIXEL = [255,0,0]
+    START_POINT_X = 282
+    START_POINT_Y = 197 #197.39999961853027
+    END_POINT_X = 282 + (355 - 282) * 3
+    END_POINT_Y = 197 #197.39999961853027
+
+    BACKGROUND = NON_DRAWING_PIXEL * WIDTH * HEIGHT
 
     def __init__(self, file_path : str = None):
         """
@@ -119,17 +118,17 @@ class Drawing:
         :param List[int] pixel: A pixel with three integers for RGB.
         """
 
-        if (len(drawing) >= (y * WIDTH * 3 + x * 3 + 2)):
+        if (len(drawing) >= (y * Drawing.WIDTH * 3 + x * 3 + 2)):
             if ((r==None or g==None or b==None) and pixel==None):
                 return
             elif (r==None or g==None or b==None):
-                drawing[y * WIDTH * 3 + x * 3 + 0] = pixel[0]
-                drawing[y * WIDTH * 3 + x * 3 + 1] = pixel[1]
-                drawing[y * WIDTH * 3 + x * 3 + 2] = pixel[2]
+                drawing[y * Drawing.WIDTH * 3 + x * 3 + 0] = pixel[0]
+                drawing[y * Drawing.WIDTH * 3 + x * 3 + 1] = pixel[1]
+                drawing[y * Drawing.WIDTH * 3 + x * 3 + 2] = pixel[2]
             else: # pixel==None
-                drawing[y * WIDTH * 3 + x * 3 + 0] = r
-                drawing[y * WIDTH * 3 + x * 3 + 1] = g
-                drawing[y * WIDTH * 3 + x * 3 + 2] = b
+                drawing[y * Drawing.WIDTH * 3 + x * 3 + 0] = r
+                drawing[y * Drawing.WIDTH * 3 + x * 3 + 1] = g
+                drawing[y * Drawing.WIDTH * 3 + x * 3 + 2] = b
 
     # Merges given array with background array and returns it 
     @staticmethod
@@ -147,7 +146,7 @@ class Drawing:
         elif background_array: #if given background PNG as RGB arrays
             background = background_array
         else:
-            background = copy.deepcopy(BACKGROUND)
+            background = copy.deepcopy(Drawing.BACKGROUND)
         
         # print("_merge_array_on_background_2: ", background)
 
@@ -167,7 +166,9 @@ class Drawing:
             
             # print("_render_array_to_png: ", pixelArr)
             
-            writer = png.Writer(width=WIDTH, height=HEIGHT, greyscale=False)
+            writer = png.Writer(
+                width=Drawing.WIDTH, height=Drawing.HEIGHT, greyscale=False
+                )
             with open(out_path, 'bw') as goal_file: 
                 writer.write_array(goal_file, pixelArr)
             #print("RENDER SUCCESSFUL!")
@@ -206,7 +207,7 @@ class Drawing:
         colors=[[255,0,0],[0,255,0],[0,0,255]], on_template=False):
         
         cycles = Drawing.divide_to_cycles(self)
-        png_array = copy.deepcopy(BACKGROUND)
+        png_array = copy.deepcopy(Drawing.BACKGROUND)
 
         if on_template: # render image on template image found at TEMPLATE_PATH
             png_array = Drawing._merge_array_on_background([], background_path=TEMPLATE_PATH)
@@ -246,7 +247,7 @@ class Drawing:
         for inp in [drawing_r, drawing_g, drawing_b, back_r, back_g, back_b]:
             check_if_valid_rgb_val(inp)
         # make the background
-        back = [back_r, back_g, back_b] * WIDTH * HEIGHT
+        back = [back_r, back_g, back_b] * Drawing.WIDTH * Drawing.HEIGHT
         # change colors of that background for the drawing pixels in self.drawing
         for pixel in self.drawing:
             x, y = int(pixel["x"]), int(pixel["y"])

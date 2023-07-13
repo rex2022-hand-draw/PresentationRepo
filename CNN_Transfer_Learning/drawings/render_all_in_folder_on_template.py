@@ -95,8 +95,9 @@ def render_all_in_folder_on_template(
 
 if __name__ == "__main__":
     render_all_in_folder_on_template(
-        src_dir="Anonimized_data/all_data/useful", save_dir="CNN_Transfer_Learning/image_rendered", 
-        drawing_color=[0,0,0], template_color=[0,0,255], background_color=[255,255,255],
-        render_dominant=False,
+        src_dir="CNN_Transfer_Learning/drawings/top_21_shaky_dominant", 
+        save_dir="CNN_Transfer_Learning/image_rendered", 
+        drawing_color=[0,0,0], template_color=[255,0,255], background_color=[255,255,255],
+        render_dominant=True,
         template_on_top=True
         )

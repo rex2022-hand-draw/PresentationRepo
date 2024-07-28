@@ -1,8 +1,9 @@
 # Classification of hand drawings using machine learning algorithms!
 
 Thanks for your interest in our project! You will find here:
-* **codes** for each algorithmic approaches
+* **code** for each algorithmic approaches
 * **data** we used in our project, in the *Anonimized_data* folder.
+* [Presentation Link](https://www.canva.com/design/DAFZwoDS9fc/wXBiEtTuZ2Y5Zu4d5BAPzw/edit?utm_content=DAFZwoDS9fc&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)
 
 Data used in each method are (hopefully) included in each methods' folder.
 
